@@ -22,11 +22,11 @@ class TokenSpec extends Specification with ScalaCheck { def is = s2"""
     new Token(key, secret, time).asHexString must haveLength(40)
   }
 
-  def cannedResponse = new Token(new Key("123"), new Secret("abc"), new Date(1999)).asHexString must
+  def cannedResponse = new Token(Key("123"), Secret("abc"), new Date(1999)).asHexString must
     beEqualTo("745e033158896561bce9ed983e7a3ddf03e84355")
 
-  implicit val key = Arbitrary(for (string <- Arbitrary.arbString.arbitrary) yield new Key(string))
-  implicit val secret = Arbitrary(for (string <- Arbitrary.arbString.arbitrary) yield new Secret(string))
+  implicit val key = Arbitrary(for (string <- Arbitrary.arbString.arbitrary) yield Key(string))
+  implicit val secret = Arbitrary(for (string <- Arbitrary.arbString.arbitrary) yield Secret(string))
 
 
 

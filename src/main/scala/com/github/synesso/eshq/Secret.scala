@@ -1,5 +1,3 @@
 package com.github.synesso.eshq
 
-class Secret(val secret: String) extends AnyVal {
-  override def toString = secret
-}
+case class Secret(value: String) extends AnyVal
