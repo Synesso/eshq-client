@@ -2,7 +2,7 @@ package com.github.synesso.eshq
 
 import java.util.Date
 
-class Token(key: Key, secret: Secret, time: Date) {
+private[eshq] class Token(key: Key, secret: Secret, time: Date) {
 
   lazy val asHexString = {
     val timeAsLong = time.getTime / 1000
