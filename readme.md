@@ -1,16 +1,18 @@
 ## The EventSource HQ Scala Client
 
-_Not ready for use at this time_
+_Not ready for use at this time!_
 
 [![Build Status](https://api.travis-ci.org/Synesso/scala-eshq.png)](https://travis-ci.org/Synesso/scala-eshq)
 
-## Pre-requisite
+### Pre-requisite
 
 Make sure you have an [EventSource HQ](http://www.eventsourcehq.com/) account.
 
-## Install
+### Install
 
 Add the following dependency to your `build.sbt`
+
+_Not yet published to sonatype!_
 
 ```scala
 libraryDependencies ++= Seq(
@@ -18,7 +20,7 @@ libraryDependencies ++= Seq(
 )
 ```
 
-## Example usage
+### Example usage
 
 ```scala
 import com.github.synesso.eshq._
@@ -33,14 +35,14 @@ val channel = client.open("channel-name")
 val res: Future[String] = channel.send("""{"msg": "Hello, World!"}"""})
 ```
 
-The `EventSourceClient` is used to create multiple `Channel`s with the same credentials.
-If this is not needed, simply create the `Channel` directly
+The EventSourceClient is used to create multiple Channels with the same credentials.
+If this is not needed, simply instantiate the Channel directly
 
 ```scala
 val channel = new Channel("a channel",  Key("a"), Secret("b"))
 ```
 
-Both the `EventSourceClient` and `Channel` constructors take an optional `serviceURL` parameter,
+Both the EventSourceClient and Channel constructors take an optional `serviceURL` parameter,
 should it differ from the default value of `http://app.eventsourcehq.com`
 
 ```scala
