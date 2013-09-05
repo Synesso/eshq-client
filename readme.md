@@ -39,7 +39,7 @@ The EventSourceClient is used to create multiple Channels with the same credenti
 If this is not needed, simply instantiate the Channel directly
 
 ```scala
-val channel = new Channel("a channel",  Key("a"), Secret("b"))
+val channel = Channel("a channel",  Key("a"), Secret("b"))
 ```
 
 Both the EventSourceClient and Channel constructors take an optional `serviceURL` parameter,
@@ -48,5 +48,5 @@ should it differ from the default value of `http://app.eventsourcehq.com`
 ```scala
 val client = new EventSourceClient(Key("a"), Secret("b"), new URL("http://non-default-ho.st"))
 // or
-val channel = new Channel("a channel",  Key("a"), Secret("b"), new URL("http://non-default-ho.st"))
+val channel = Channel("a channel",  Key("a"), Secret("b"), new URL("http://non-default-ho.st"))
 ```
