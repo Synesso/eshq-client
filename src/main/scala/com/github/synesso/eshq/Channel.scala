@@ -21,9 +21,7 @@ private[eshq] class Channel(val name: String, key: Key, secret: Secret, serviceU
   private def send(endpoint: String, channelName: String, event: Option[String]): Future[String] = {
     val credentials = Credentials(key, secret)
     val params = event.map(e => Map("data" -> e)).getOrElse(Map.empty[String, String]).updated("channel", channelName)
-//    println(s"$serviceURL$endpoint")
     val request = requestBuilder(s"$serviceURL$endpoint", params, credentials)
-//    println(request)
     httpRequestor(request)
   }
 
