@@ -13,9 +13,7 @@ private[eshq] class Channel(val name: String, key: Key, secret: Secret, serviceU
 
   def send(event: String): Future[String] = {
     // todo - map and wrap, so that the exception is known from the open or send command.
-    openResult flatMap {r =>
-      send("/event", name, Some(event))
-    }
+    openResult flatMap {_ => send("/event", name, Some(event))}
   }
 
   private def send(endpoint: String, channelName: String, event: Option[String]): Future[String] = {
