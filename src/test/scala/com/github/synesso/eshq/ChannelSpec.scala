@@ -18,11 +18,11 @@ class ChannelSpec extends Specification with Mockito with ScalaCheck with Arbitr
     val httpRequestor = mock[(Req) => Future[String]]
     val request = Req(identity)
 
-    requestBuilder(endWith("/socket"), any[Map[String, String]], any[Credentials]) returns request
+    requestBuilder(endWith("/socket"), ===(Map("channel" -> name)), any[Credentials]) returns request
     httpRequestor(request) returns Future("")
 
-    new Channel(name, key, secret, requestBuilder = requestBuilder, httpRequestor = httpRequestor).send("open")
-    there was atLeastOne(httpRequestor).apply(request)
+    new Channel(name, key, secret, requestBuilder = requestBuilder, httpRequestor = httpRequestor)
+    there was one(httpRequestor).apply(request)
   }
 
 }
