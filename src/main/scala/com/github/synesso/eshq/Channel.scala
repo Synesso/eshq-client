@@ -3,10 +3,11 @@ package com.github.synesso.eshq
 import scala.concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
 import java.net.URL
-import java.util.Date
 import dispatch._
 
-class Channel(val name: String, key: Key, secret: Secret, serviceURL: URL = EventSourceClient.defaultURL) {
+private[eshq] class Channel(val name: String, key: Key, secret: Secret, serviceURL: URL = EventSourceClient.defaultURL,
+  requestBuilder: (String, Map[String, String], Credentials) => Req = Channel.requestBuilder,
+  httpRequestor: (Req) => Future[String] = Channel.httpRequestor) {
 
   private val openResult = send("/socket", name, None)
 
@@ -18,12 +19,21 @@ class Channel(val name: String, key: Key, secret: Secret, serviceURL: URL = Even
   }
 
   private def send(endpoint: String, channelName: String, event: Option[String]): Future[String] = {
-    val nowAsLong = new Date().getTime / 1000
-    val token = new Token(key, secret, nowAsLong).asHexString
-    val credentials = Map("key" -> key.value, "timestamp" -> s"$nowAsLong", "token" -> token)
+    val credentials = Credentials(key, secret)
     val params = event.map(e => Map("data" -> e)).getOrElse(Map.empty[String, String]).updated("channel", channelName)
-    val request = url(s"$serviceURL$endpoint") << params << credentials
-    Http(request OK as.String)
+//    println(s"$serviceURL$endpoint")
+    val request = requestBuilder(s"$serviceURL$endpoint", params, credentials)
+//    println(request)
+    httpRequestor(request)
   }
 
+}
+
+object Channel {
+  def apply(name: String, key: Key, secret: Secret) = new Channel(name, key, secret)
+  def apply(name: String, key: Key, secret: Secret, serviceURL: URL) = new Channel(name, key, secret, serviceURL)
+
+  private[eshq] val requestBuilder = (name: String, params: Map[String, String], credentials: Credentials) =>
+    url(name) << params << credentials.asMap
+  private[eshq] val httpRequestor = (request: Req) => Http(request OK as.String)
 }
