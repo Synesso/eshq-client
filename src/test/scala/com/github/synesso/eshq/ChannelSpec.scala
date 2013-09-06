@@ -1,36 +1,44 @@
 package com.github.synesso.eshq
 
 import org.specs2.{ScalaCheck, Specification}
-import org.specs2.mock.Mockito
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future, Awaitable}
 import ExecutionContext.Implicits.global
-import dispatch.Req
+import dispatch.{StatusCode, Req}
+import org.specs2.specification.After
+import org.mockito.{Mockito => Mocks}
+import org.specs2.mock.Mockito
+import org.scalacheck.Prop
+import java.net.ConnectException
+import scala.concurrent.duration.Duration
+import java.util.concurrent.TimeUnit._
 
 class ChannelSpec extends Specification with Mockito with ScalaCheck with ArbitraryValues { def is = s2"""
 
   A Channel must
     send a request to /socket with provided channel name on instantiation $sendToSocket
     send a request to /event with channel and data $sendToEvent
+    report the open request error on first send attempt $openError
+    report the open request failure on first send attempt $openFailure
+    report the send request error $sendError
+    report the send request failure $sendFailure
 
 """
 
-  def sendToSocket = prop { (name: String, key: Key, secret: Secret) =>
-    val requestBuilder = mock[(String, Map[String, String], Credentials) => Req]
-    val httpRequestor = mock[(Req) => Future[String]]
-    val request = Req(identity)
+  val openRequest = Req(identity)
+  val sendRequest = Req(identity)
 
-    requestBuilder(endWith("/socket"), ===(Map("channel" -> name)), any[Credentials]) returns request
-    httpRequestor(request) returns Future("")
+  def sendToSocket = prop { (name: String, key: Key, secret: Secret) =>
+    val (requestBuilder, httpRequestor) = mocks
+
+    requestBuilder(endWith("/socket"), ===(Map("channel" -> name)), any[Credentials]) returns openRequest
+    httpRequestor(openRequest) returns Future("openOK")
 
     new Channel(name, key, secret, requestBuilder = requestBuilder, httpRequestor = httpRequestor)
-    there was one(httpRequestor).apply(request)
+    there was one(httpRequestor).apply(openRequest)
   }
 
   def sendToEvent = prop { (name: String, key: Key, secret: Secret, event: String) =>
-    val requestBuilder = mock[(String, Map[String, String], Credentials) => Req]
-    val httpRequestor = mock[(Req) => Future[String]]
-    val openRequest = Req(identity)
-    val sendRequest = Req(identity)
+    val (requestBuilder, httpRequestor) = mocks
 
     requestBuilder(endWith("/socket"), ===(Map("channel" -> name)), any[Credentials]) returns openRequest
     requestBuilder(endWith("/event"), ===(Map("data" -> event, "channel" -> name)), any[Credentials]) returns sendRequest
@@ -40,8 +48,31 @@ class ChannelSpec extends Specification with Mockito with ScalaCheck with Arbitr
 
     val channel = new Channel(name, key, secret, requestBuilder = requestBuilder, httpRequestor = httpRequestor)
 
-    val actualResult = channel.send(event)
-    actualResult must beEqualTo("send OK").await
+    channel.send(event) must beEqualTo("send OK").await
   }
+
+  def openError = prop { (name: String, key: Key, secret: Secret) =>
+    onOpen(name, key, secret, new ConnectException("simulated"))
+  }
+
+  def openFailure = prop { (name: String, key: Key, secret: Secret) =>
+    onOpen(name, key, secret, StatusCode(404))
+  }
+
+  private def onOpen(name: String, key: Key, secret: Secret, throwable: Throwable) = {
+    val (requestBuilder, httpRequestor) = mocks
+    requestBuilder(endWith("/socket"), ===(Map("channel" -> name)), any[Credentials]) returns openRequest
+    httpRequestor(openRequest) returns Future({throw throwable; ""})
+    val channel = new Channel(name, key, secret, requestBuilder = requestBuilder, httpRequestor = httpRequestor)
+    val result: Future[String] = channel.send("anything")
+    Await.ready(result, Duration(100, MILLISECONDS))
+    result.failed must beEqualTo(throwable).await
+  }
+
+  def sendError = pending
+  def sendFailure = pending
+
+  private def mocks = (mock[(String, Map[String, String], Credentials) => Req], mock[(Req) => Future[String]])
+
 
 }
