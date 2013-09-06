@@ -1,6 +1,6 @@
 organization := "com.github.synesso"
 
-name := "scala-eshq"
+name := "eshq"
 
 scalaVersion := "2.10.2"
 

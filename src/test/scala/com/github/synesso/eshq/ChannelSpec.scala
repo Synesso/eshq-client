@@ -1,13 +1,10 @@
 package com.github.synesso.eshq
 
 import org.specs2.{ScalaCheck, Specification}
-import scala.concurrent.{Await, ExecutionContext, Future, Awaitable}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import ExecutionContext.Implicits.global
 import dispatch.{StatusCode, Req}
-import org.specs2.specification.After
-import org.mockito.{Mockito => Mocks}
 import org.specs2.mock.Mockito
-import org.scalacheck.Prop
 import java.net.ConnectException
 import scala.concurrent.duration.Duration
 import java.util.concurrent.TimeUnit._

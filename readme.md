@@ -16,7 +16,7 @@ _Not yet published to sonatype!_
 
 ```scala
 libraryDependencies ++= Seq(
-  "com.github.synesso" %% "scala-eshq" % "0.1"
+  "com.github.synesso" %% "eshq" % "0.1"
 )
 ```
 
