@@ -2,7 +2,7 @@
 
 _Not ready for use at this time!_
 
-[![Build Status](https://api.travis-ci.org/Synesso/scala-eshq.png)](https://travis-ci.org/Synesso/scala-eshq)
+[![Build Status](https://api.travis-ci.org/Synesso/eshq-client.png)](https://travis-ci.org/Synesso/eshq-client)
 
 ### Pre-requisite
 
