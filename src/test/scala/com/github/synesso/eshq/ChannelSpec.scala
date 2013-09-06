@@ -59,20 +59,36 @@ class ChannelSpec extends Specification with Mockito with ScalaCheck with Arbitr
     onOpen(name, key, secret, StatusCode(404))
   }
 
+  def sendError = prop { (name: String, key: Key, secret: Secret, event: String) =>
+    onSend(name, key, secret, event, new ConnectException("simulated"))
+  }
+
+  def sendFailure = prop { (name: String, key: Key, secret: Secret, event: String) =>
+    onSend(name, key, secret, event, StatusCode(404))
+  }
+
   private def onOpen(name: String, key: Key, secret: Secret, throwable: Throwable) = {
     val (requestBuilder, httpRequestor) = mocks
     requestBuilder(endWith("/socket"), ===(Map("channel" -> name)), any[Credentials]) returns openRequest
     httpRequestor(openRequest) returns Future({throw throwable; ""})
     val channel = new Channel(name, key, secret, requestBuilder = requestBuilder, httpRequestor = httpRequestor)
-    val result: Future[String] = channel.send("anything")
+    val result = channel.send("anything")
     Await.ready(result, Duration(100, MILLISECONDS))
     result.failed must beEqualTo(throwable).await
   }
 
-  def sendError = pending
-  def sendFailure = pending
+  private def onSend(name: String, key: Key, secret: Secret, event: String, throwable: Throwable) = {
+    val (requestBuilder, httpRequestor) = mocks
+    requestBuilder(endWith("/socket"), ===(Map("channel" -> name)), any[Credentials]) returns openRequest
+    requestBuilder(endWith("/event"), ===(Map("data" -> event, "channel" -> name)), any[Credentials]) returns sendRequest
+    httpRequestor(openRequest) returns Future("open OK")
+    httpRequestor(sendRequest) returns Future({throw throwable; ""})
+    val channel = new Channel(name, key, secret, requestBuilder = requestBuilder, httpRequestor = httpRequestor)
+    val result = channel.send(event)
+    Await.ready(result, Duration(100, MILLISECONDS))
+    result.failed must beEqualTo(throwable).await
+  }
 
   private def mocks = (mock[(String, Map[String, String], Credentials) => Req], mock[(Req) => Future[String]])
-
 
 }
