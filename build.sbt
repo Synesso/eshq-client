@@ -4,7 +4,7 @@ name := "eshq"
 
 scalaVersion := "2.10.2"
 
-version := "0.1"
+version := "0.1-SNAPSHOT"
 
 libraryDependencies ++= Seq(
   "net.databinder.dispatch" %% "dispatch-core" % "0.11.0",
@@ -19,3 +19,35 @@ resolvers ++= Seq(
   "Sonatype OSS Releases" at "http://oss.sonatype.org/content/repositories/releases/",
   "Sonatype OSS Snapshots" at "http://oss.sonatype.org/content/repositories/snapshots/"
 )
+
+publishMavenStyle := true
+
+publishTo := {
+  val nexus = "https://oss.sonatype.org/"
+  if (version.value.trim.endsWith("SNAPSHOT"))
+    Some("snapshots" at nexus + "content/repositories/snapshots")
+  else
+    Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+}
+
+pomIncludeRepository := { _ => false }
+
+pomExtra := (
+  <url>http://github.com/Synesso/eshq-client</url>
+  <licenses>
+    <license>
+      <name>MIT</name>
+      <url>http://opensource.org/licenses/MIT</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <scm>
+    <url>git@github.com:Synesso/eshq-client.git</url>
+    <connection>scm:git:git@github.com:Synesso/eshq-client.git</connection>
+  </scm>
+  <developers>
+    <developer>
+      <id>jmawson</id>
+      <name>Jem Mawson</name>
+    </developer>
+  </developers>)
