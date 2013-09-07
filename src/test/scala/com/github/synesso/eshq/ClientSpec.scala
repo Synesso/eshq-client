@@ -9,13 +9,13 @@ import java.net.ConnectException
 import scala.concurrent.duration.Duration
 import java.util.concurrent.TimeUnit._
 
-class ChannelSpec extends Specification with Mockito with ScalaCheck with ArbitraryValues { def is = s2"""
+class ClientSpec extends Specification with Mockito with ScalaCheck with ArbitraryValues { def is = s2"""
 
-  A Channel must
-    send a request to /socket with provided channel name on instantiation $sendToSocket
-    send a request to /event with channel and data $sendToEvent
-    report the open request error on first send attempt $openError
-    report the open request failure on first send attempt $openFailure
+  An EventSourceClient must
+    send a request to /socket with provided channel name on open $sendToSocket
+    send a request to /event with channel and data on send $sendToEvent
+    report the open request error $openError
+    report the open request failure $openFailure
     report the send request error $sendError
     report the send request failure $sendFailure
 
@@ -30,8 +30,8 @@ class ChannelSpec extends Specification with Mockito with ScalaCheck with Arbitr
     requestBuilder(endWith("/socket"), ===(Map("channel" -> name)), any[Credentials]) returns openRequest
     httpRequestor(openRequest) returns Future("openOK")
 
-    new Channel(name, key, secret, requestBuilder = requestBuilder, httpRequestor = httpRequestor)
-    there was one(httpRequestor).apply(openRequest)
+    val client = new EventSourceClient(key, secret, requestBuilder = requestBuilder, httpRequestor = httpRequestor)
+    client.open(Channel(name)) must beEqualTo("openOK").await
   }
 
   def sendToEvent = prop { (name: String, key: Key, secret: Secret, event: String) =>
@@ -43,9 +43,8 @@ class ChannelSpec extends Specification with Mockito with ScalaCheck with Arbitr
     httpRequestor(openRequest) returns Future("open OK")
     httpRequestor(sendRequest) returns Future("send OK")
 
-    val channel = new Channel(name, key, secret, requestBuilder = requestBuilder, httpRequestor = httpRequestor)
-
-    channel.send(event) must beEqualTo("send OK").await
+    val client = new EventSourceClient(key, secret, requestBuilder = requestBuilder, httpRequestor = httpRequestor)
+    client.send(Channel(name), event) must beEqualTo("send OK").await
   }
 
   def openError = prop { (name: String, key: Key, secret: Secret) =>
@@ -68,20 +67,18 @@ class ChannelSpec extends Specification with Mockito with ScalaCheck with Arbitr
     val (requestBuilder, httpRequestor) = mocks
     requestBuilder(endWith("/socket"), ===(Map("channel" -> name)), any[Credentials]) returns openRequest
     httpRequestor(openRequest) returns Future({throw throwable; ""})
-    val channel = new Channel(name, key, secret, requestBuilder = requestBuilder, httpRequestor = httpRequestor)
-    val result = channel.send("anything")
+    val client = new EventSourceClient(key, secret, requestBuilder = requestBuilder, httpRequestor = httpRequestor)
+    val result = client.open(Channel(name))
     Await.ready(result, Duration(100, MILLISECONDS))
     result.failed must beEqualTo(throwable).await
   }
 
   private def onSend(name: String, key: Key, secret: Secret, event: String, throwable: Throwable) = {
     val (requestBuilder, httpRequestor) = mocks
-    requestBuilder(endWith("/socket"), ===(Map("channel" -> name)), any[Credentials]) returns openRequest
     requestBuilder(endWith("/event"), ===(Map("data" -> event, "channel" -> name)), any[Credentials]) returns sendRequest
-    httpRequestor(openRequest) returns Future("open OK")
     httpRequestor(sendRequest) returns Future({throw throwable; ""})
-    val channel = new Channel(name, key, secret, requestBuilder = requestBuilder, httpRequestor = httpRequestor)
-    val result = channel.send(event)
+    val client = new EventSourceClient(key, secret, requestBuilder = requestBuilder, httpRequestor = httpRequestor)
+    val result = client.send(Channel(name), event)
     Await.ready(result, Duration(100, MILLISECONDS))
     result.failed must beEqualTo(throwable).await
   }

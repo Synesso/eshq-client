@@ -13,7 +13,7 @@ class CredentialsSpec extends Specification with Mockito with ScalaCheck with Ar
 
   def convertToMap = prop{(key: Key, secret: Secret, time: Date) =>
     val timestamp = time.getTime / 1000
-    val token = new Token(key, secret, timestamp).asHexString
+    val token = new AuthToken(key, secret, timestamp).asHexString
     val map = new Credentials(key, secret, time).asMap
     map must havePairs("key" -> key.value, "timestamp" -> s"$timestamp", "token" -> token)
   }
