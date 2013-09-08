@@ -4,11 +4,16 @@ import java.net.URL
 import dispatch.{Http, as, url, Req}
 import scala.concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
+import org.json4s._
+import org.json4s.jackson.Serialization
+import org.json4s.jackson.Serialization.write
+
 
 class EventSourceClient private[eshq] (val key: Key, val secret: Secret,
   val serviceURL: URL = EventSourceClient.defaultURL,
   requestBuilder: (String, Map[String, String], Credentials) => Req,
-  httpRequestor: (Req) => Future[String]) {
+  httpRequestor: (Req) => Future[String],
+  jsonSerialiser: (AnyRef) => String) {
 
   /**
    * Opens a channel connection.
@@ -25,7 +30,15 @@ class EventSourceClient private[eshq] (val key: Key, val secret: Secret,
    * @param event the event to send
    * @return On success, JSON containing an empty object "{}"
    */
-  def send(channel: Channel, event: String) = sendToService("/event", channel.name, Some(event))
+  def send(channel: Channel, event: String): Future[String] = sendToService("/event", channel.name, Some(event))
+
+  /**
+   * Sends an event message to the given channel as JSON.
+   * @param channel the channel name
+   * @param event the event to send
+   * @return On success, JSON containing an empty object "{}"
+   */
+  def sendJson(channel: Channel, event: AnyRef): Future[String] = send(channel, jsonSerialiser(event))
 
   private def sendToService(endpoint: String, channelName: String, event: Option[String]): Future[String] = {
     val credentials = Credentials(key, secret)
@@ -36,10 +49,12 @@ class EventSourceClient private[eshq] (val key: Key, val secret: Secret,
 }
 
 object EventSourceClient {
-  def apply(key: Key, secret: Secret) = new EventSourceClient(key, secret, defaultURL, requestBuilder, httpRequestor)
+  def apply(key: Key, secret: Secret) = new EventSourceClient(key, secret, defaultURL, requestBuilder, httpRequestor,
+    jsonSerialiser)
 
   def apply(key: Key, secret: Secret, serviceURL: URL) =
-    new EventSourceClient(key, secret, serviceURL, requestBuilder, httpRequestor)
+    new EventSourceClient(key, secret, serviceURL, requestBuilder, httpRequestor, jsonSerialiser)
+
 
   val defaultURL = new URL("http://app.eventsourcehq.com")
 
@@ -47,4 +62,8 @@ object EventSourceClient {
     url(name) << params << credentials.asMap
 
   private[eshq] val httpRequestor = (request: Req) => Http(request OK as.String)
+
+  implicit val formats: Formats = Serialization.formats(NoTypeHints)
+  private[eshq] val jsonSerialiser = (any: AnyRef) => write(any)
+
 }

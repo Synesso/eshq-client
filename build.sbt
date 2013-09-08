@@ -9,6 +9,7 @@ version := "0.1-SNAPSHOT"
 libraryDependencies ++= Seq(
   "net.databinder.dispatch" %% "dispatch-core" % "0.11.0",
   "org.slf4j" % "slf4j-simple" % "1.7.5",
+  "org.json4s" %% "json4s-jackson" % "3.2.5",
   "org.specs2" %% "specs2" % "2.2" % "test",
   "org.hamcrest"  %  "hamcrest-all" % "1.3" % "test",
   "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",

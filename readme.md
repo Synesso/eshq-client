@@ -35,8 +35,12 @@ val client = new EventSourceClient(Key("my-key"), Secret("my-secret"))
 // open a channel and receive the channel data from ESHQ
 val channelData: Future[String] = client.open(Channel("my-channel"))
 
-// send an event to that channel
+// send an event to a channel as a String
 client.send(Channel("my-channel"), """{"msg": "Hello, World!"}"""})
+
+// send any reference as an event to a channel as JSON
+case class WeatherAlert(temperature: Double, time: Date)
+client.send(Channel("my-channel"), WeatherAlert(42.2, new Date))
 ```
 
 The EventSourceClient takes an optional `serviceURL` parameter, should it differ from the
