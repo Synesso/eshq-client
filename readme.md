@@ -12,15 +12,15 @@ Add the following dependency to your `build.sbt`:
 
 ```scala
 libraryDependencies ++= Seq(
-  "com.github.synesso" %% "eshq" % "0.1-SNAPSHOT"
+  "com.github.synesso" %% "eshq" % "0.1"
 )
 ```
 
-Make sure you have the sonatype OSS snapshop resolver configured:
+Make sure you have the sonatype OSS releases resolver configured:
 
 ```scala
 resolvers ++= Seq(
-  "Sonatype OSS Snapshots" at "http://oss.sonatype.org/content/repositories/snapshots/"
+  "Sonatype OSS Releases" at "http://oss.sonatype.org/content/repositories/releases/"
 )
 ```
 

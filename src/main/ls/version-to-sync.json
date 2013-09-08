@@ -1,0 +1,35 @@
+{
+    "organization": "com.github.synesso",
+    "name": "eshq",
+    "version": "0.1",
+    "description": "EventSourceHQ client library",
+    "site": "http://github.com/Synesso/eshq-client",
+    "tags": ["eshq", "eventsource", "eventsourcehq"],
+    "docs": "http://github.com/Synesso/eshq-client",
+    "licenses": [
+        {
+            "name": "MIT",
+            "url": "http://opensource.org/licenses/MIT"
+        }
+    ],
+    "resolvers": ["http://oss.sonatype.org/content/repositories/releases/"],
+    "dependencies": [
+        {
+            "organization": "org.json4s",
+            "name": "json4s-jackson_2.10",
+            "version": "3.2.5"
+        },
+        {
+            "organization": "org.slf4j",
+            "name": "slf4j-simple",
+            "version": "1.7.5"
+        },
+        {
+            "organization": "net.databinder.dispatch",
+            "name": "dispatch-core_2.10",
+            "version": "0.11.0"
+        }
+    ],
+    "scalas": ["2.10"],
+    "sbt": false
+}

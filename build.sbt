@@ -4,7 +4,7 @@ name := "eshq"
 
 scalaVersion := "2.10.2"
 
-version := "0.1-SNAPSHOT"
+version := "0.1"
 
 libraryDependencies ++= Seq(
   "net.databinder.dispatch" %% "dispatch-core" % "0.11.0",
