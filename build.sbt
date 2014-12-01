@@ -10,11 +10,16 @@ libraryDependencies ++= Seq(
   "net.databinder.dispatch" %% "dispatch-core" % "0.11.0",
   "org.slf4j" % "slf4j-simple" % "1.7.5",
   "org.json4s" %% "json4s-jackson" % "3.2.5",
-  "org.specs2" %% "specs2" % "2.2" % "test",
+  "org.specs2" %% "specs2-core" % "3.0-M0" % "test",
+  "org.specs2" %% "specs2-mock" % "3.0-M0" % "test",
+  "org.specs2" %% "specs2-scalacheck" % "3.0-M0" % "test",
+  "org.specs2" %% "specs2-matcher-extra" % "3.0-M0" % "test",
   "org.hamcrest"  %  "hamcrest-all" % "1.3" % "test",
   "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
   "org.mockito" % "mockito-all" % "1.9.5" % "test"
 )
+
+scalacOptions in Test ++= Seq("-Yrangepos")
 
 resolvers ++= Seq(
   "Sonatype OSS Releases" at "http://oss.sonatype.org/content/repositories/releases/",
